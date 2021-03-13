@@ -1,0 +1,19 @@
+{
+  "files": {
+    "main.js": "/flight-saver/static/js/main.5b1cad15.chunk.js",
+    "main.js.map": "/flight-saver/static/js/main.5b1cad15.chunk.js.map",
+    "runtime-main.js": "/flight-saver/static/js/runtime-main.51fce135.js",
+    "runtime-main.js.map": "/flight-saver/static/js/runtime-main.51fce135.js.map",
+    "static/js/2.b6199c3a.chunk.js": "/flight-saver/static/js/2.b6199c3a.chunk.js",
+    "static/js/2.b6199c3a.chunk.js.map": "/flight-saver/static/js/2.b6199c3a.chunk.js.map",
+    "static/js/3.d57f24e4.chunk.js": "/flight-saver/static/js/3.d57f24e4.chunk.js",
+    "static/js/3.d57f24e4.chunk.js.map": "/flight-saver/static/js/3.d57f24e4.chunk.js.map",
+    "index.html": "/flight-saver/index.html",
+    "static/js/2.b6199c3a.chunk.js.LICENSE.txt": "/flight-saver/static/js/2.b6199c3a.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.51fce135.js",
+    "static/js/2.b6199c3a.chunk.js",
+    "static/js/main.5b1cad15.chunk.js"
+  ]
+}
