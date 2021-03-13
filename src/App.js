@@ -23,6 +23,7 @@ const theme = {
   global: {
     colors: {
       brand: '#00739D',
+      focus: '#00739D'
     },
     font: {
       family: 'Roboto',
@@ -100,7 +101,7 @@ class App extends React.Component {
         var newFlight = {carrier: "", price: ""}
         newFlight.carrier = response.Carriers[i].Name;
         newFlight.price = response.Quotes[i].MinPrice;
-        newFlight.name = response.Places[i].Name;
+        newFlight.name = response.Places[0].Name;
         newFlight.symbol = response.Places[0].IataCode;
         newFlights.push(newFlight);
       }
@@ -177,7 +178,8 @@ class App extends React.Component {
           <AppBar>
             <Heading level='3' margin='none'>Flight-Saver</Heading>
             <Button
-              icon={<Configure />}
+              color = "light-1"
+              label={this.state.currency}
               onClick={() => {
                 this.setState({
                   showSidebar: !this.state.showSidebar
@@ -274,7 +276,8 @@ class App extends React.Component {
                         },
                         currency: newCurrency.Code,
                         currencySymbol: newCurrency.Symbol,
-                        currencyFormLabel: newStr
+                        currencyFormLabel: newStr,
+                        showSidebar: false
                       })
                     }
                   }
