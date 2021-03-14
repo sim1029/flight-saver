@@ -15,9 +15,10 @@ import {
  CardHeader,
  CardBody,
  CardFooter,
- Text
+ Text,
+ InfiniteScroll
 } from 'grommet';
-import { FormClose, Configure, Ticket } from 'grommet-icons';
+import { FormClose, Configure, Ticket, FormNextLink } from 'grommet-icons';
 
 const theme = {
   global: {
@@ -80,13 +81,13 @@ class App extends React.Component {
     this.createCurrency();
   }
 
-  create(e) {
+  create(value, currency) {
     // get all entities - GET
-    const originplace = e.value.originplace.substr(e.value.originplace.indexOf("(")+1, e.value.originplace.indexOf(")"));
-    const destinationplace = e.value.destinationplace.substr(e.value.destinationplace.indexOf("(")+1, e.value.destinationplace.indexOf(")"));
-    const outbound = e.value.outbound.substr(0, e.value.outbound.indexOf('T'));
-    const inbound = "/" + e.value.inbound.substr(0, e.value.outbound.indexOf('T'));
-    fetch(`https://skyscanner-skyscanner-flight-search-v1.p.rapidapi.com/apiservices/browseroutes/v1.0/US/${this.state.currency}/en-US/${originplace}/${destinationplace}/${outbound}${inbound}`, {
+    const originplace = value.originplace.substr(value.originplace.indexOf("(")+1, value.originplace.indexOf(")"));
+    const destinationplace = value.destinationplace.substr(value.destinationplace.indexOf("(")+1, value.destinationplace.indexOf(")"));
+    const outbound = value.outbound.substr(0, value.outbound.indexOf('T'));
+    const inbound = "/" + value.inbound.substr(0, value.outbound.indexOf('T'));
+    fetch(`https://skyscanner-skyscanner-flight-search-v1.p.rapidapi.com/apiservices/browseroutes/v1.0/US/${currency}/en-US/${originplace}/${destinationplace}/${outbound}${inbound}`, {
       "method": "GET",
       "headers": {
         "x-rapidapi-host": "skyscanner-skyscanner-flight-search-v1.p.rapidapi.com",
@@ -97,12 +98,17 @@ class App extends React.Component {
     .then(response => {
       console.log(response);
       var newFlights = [];
-      for(var i = 0; i<response.Carriers.length; i++){
+      for(var i = 0; i<response.Quotes.length; i++){
         var newFlight = {carrier: "", price: ""}
-        newFlight.carrier = response.Carriers[i].Name;
+        var carrier = response.Carriers.find(item => item.CarrierId === response.Quotes[i].OutboundLeg.CarrierIds[0]);
+        var departing = response.Places.find(item => item.PlaceId === response.Quotes[i].OutboundLeg.OriginId);
+        var returning = response.Places.find(item => item.PlaceId === response.Quotes[i].OutboundLeg.DestinationId);
+        newFlight.carrier = carrier.Name;
         newFlight.price = response.Quotes[i].MinPrice;
-        newFlight.name = response.Places[0].Name;
-        newFlight.symbol = response.Places[0].IataCode;
+        newFlight.originName = departing.Name;
+        newFlight.originSymbol = departing.IataCode;
+        newFlight.destinationSymbol = returning.IataCode;
+        newFlight.destinationName = returning.Name;
         newFlights.push(newFlight);
       }
       this.setState({
@@ -188,8 +194,8 @@ class App extends React.Component {
             />
           </AppBar>
           <Box direction='row' alignSelf="center" flex overflow={{ horizontal: 'hidden' }}>
-            <Box alignSelf="start" justify='center' direction="row" margin="medium">
-              <Box direction="column" justify='stretch'>
+            <Box alignSelf="start" justify='center' direction="column" margin="medium">
+              <Box justify='stretch'>
                 <Form
                   value={this.state.value}
                   onChange={value => {
@@ -202,13 +208,14 @@ class App extends React.Component {
                   }}
                   onReset={event => {
                     this.setState({
-                      value: defaultValue
+                      value: defaultValue,
+                      flights: []
                     })
                   }
                   }
                   onSubmit={event =>
                     {
-                      this.create(event);
+                      this.create(event.value, this.state.currency);
                     }
                   }
                 >
@@ -231,20 +238,22 @@ class App extends React.Component {
                     </Box>
                   </Box>
                 </Form>
-                {this.state.flights.map((flight) => {
-                  return (
-                    <Box justify='center' direction="row" margin="small">
+              </Box>
+              <Box overflow="auto" margin="medium" fill="vertical">
+                <InfiniteScroll items={this.state.flights}>
+                  {(item) => (
+                    <Box justify='center' direction="row" margin="small" flex={false}>
                       <Card height="xsmall" fill="horizontal" basis="2/3" background="light-1" pad="small">
                         <CardHeader fill="horizontal">
-                          <Text size="xlarge" color="neutral-3">{flight.carrier}</Text><Text size="2xl" weight="bold">{this.state.currencySymbol}{flight.price}</Text>
+                          <Text size="xlarge" color="neutral-3">{item.carrier}</Text><Text size="2xl" weight="bold">{this.state.currencySymbol}{item.price}</Text>
                         </CardHeader>
                         <CardBody>
-                          <Text weight="bold" size="small">{flight.name} ({flight.symbol})</Text>
+                          <Text weight="bold" size="small">{item.originName} ({item.originSymbol}) <FormNextLink/> {item.destinationName} ({item.destinationSymbol})</Text>
                         </CardBody>
                       </Card>
                     </Box>
-                  )
-                })}
+                  )}
+                </InfiniteScroll>
               </Box>
             </Box>
           {(!this.state.showSidebar || size !== 'small') ? (
@@ -279,6 +288,7 @@ class App extends React.Component {
                         currencyFormLabel: newStr,
                         showSidebar: false
                       })
+                      this.create(this.state.value, newCurrency.Code);
                     }
                   }
                 >
