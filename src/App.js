@@ -16,15 +16,21 @@ import {
  CardBody,
  CardFooter,
  Text,
- InfiniteScroll
+ InfiniteScroll,
+ CheckBox
 } from 'grommet';
 import { FormClose, Configure, Ticket, FormNextLink } from 'grommet-icons';
+import logo from './logo.png';
 
 const theme = {
   global: {
     colors: {
       brand: '#00739D',
-      focus: '#00739D'
+      focus: {
+        border: {
+            color: 'transparent',
+        },
+       },
     },
     font: {
       family: 'Roboto',
@@ -64,12 +70,14 @@ class App extends React.Component {
       showSidebar: false,
       value: defaultValue,
       flights: [],
+      flightsExist: false,
       originVal: "",
       currency: "USD",
       currencyFormLabel: "Select Currency (USD)",
       currencySymbol: "$",
       airportNames: [],
       currencyArr: [],
+      lowest: true,
       value2: {
         currency: ""
       },
@@ -78,6 +86,7 @@ class App extends React.Component {
     this.createSuggestions = this.createSuggestions.bind(this);
     this.createCurrency = this.createCurrency.bind(this);
     this.suggestCurrency = this.suggestCurrency.bind(this);
+    this.reverseFlights = this.reverseFlights.bind(this);
     this.createCurrency();
   }
 
@@ -111,11 +120,23 @@ class App extends React.Component {
         newFlight.destinationName = returning.Name;
         newFlights.push(newFlight);
       }
-      this.setState({
-        flights: newFlights,
-      });
+      if (newFlights.length !== 0){
+        this.setState({
+          flights: newFlights,
+          flightsExist: true,
+        });
+      } else {
+        this.setState({
+          flights: [{carrier: "No flights found", price: "", originName:"", originSymbol:"", destinationSymbol:"", destinationName:""}],
+          flightsExist: false,
+        });
+      }
     })
-    .catch(err => { console.log(err);
+    .catch(err => {
+      console.log(err);
+      this.setState({
+        flights: [{carrier: "ERROR - Please try a differnt Query", price: "", originName:"", originSymbol:"", destinationSymbol:"", destinationName:""}]
+      })
     });
   }
 
@@ -175,6 +196,12 @@ class App extends React.Component {
     })
   }
 
+  reverseFlights(){
+    this.setState({
+      flights: this.state.flights.reverse(),
+    })
+  }
+
   render() {
     return (
       <Grommet theme={theme} full>
@@ -182,7 +209,9 @@ class App extends React.Component {
       {size => (
         <Box fill>
           <AppBar>
-            <Heading level='3' margin='none'>Flight-Saver</Heading>
+            <Heading level='3' margin='none'>
+              Flight-Saver       <img src={logo} width="25px"/>
+            </Heading>
             <Button
               color = "light-1"
               label={this.state.currency}
@@ -209,7 +238,8 @@ class App extends React.Component {
                   onReset={event => {
                     this.setState({
                       value: defaultValue,
-                      flights: []
+                      flights: [],
+                      flightsExist: false,
                     })
                   }
                   }
@@ -240,6 +270,19 @@ class App extends React.Component {
                 </Form>
               </Box>
               <Box overflow="auto" margin="medium" fill="vertical">
+                {this.state.flightsExist && (
+                  <CheckBox
+                    checked={this.state.lowest}
+                    label="Low to High"
+                    color="brand"
+                    onChange={(event) => {
+                      this.reverseFlights();
+                      this.setState({
+                        lowest: !this.state.lowest,
+                      })
+                    }}
+                  />
+                )}
                 <InfiniteScroll items={this.state.flights}>
                   {(item) => (
                     <Box justify='center' direction="row" margin="small" flex={false}>
@@ -257,7 +300,7 @@ class App extends React.Component {
               </Box>
             </Box>
           {(!this.state.showSidebar || size !== 'small') ? (
-            <Collapsible direction="horizontal" open={this.state.showSidebar}>
+            <Collapsible direction="horizontal" fill="vertical" open={this.state.showSidebar}>
               <Box
                  flex
                  width='medium'
