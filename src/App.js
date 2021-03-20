@@ -283,9 +283,9 @@ class App extends React.Component {
                     }}
                   />
                 )}
-                <InfiniteScroll items={this.state.flights}>
-                  {(item) => (
-                    <Box justify='center' direction="row" margin="small" flex={false}>
+                    <Box justify='center' direction="column" margin="small" flex={false}>
+                    {this.state.flights.map((item) =>
+                      <Box direction="row" justify="center" pad="small">
                       <Card height="xsmall" fill="horizontal" basis="2/3" background="light-1" pad="small">
                         <CardHeader fill="horizontal">
                           <Text size="xlarge" color="neutral-3">{item.carrier}</Text><Text size="2xl" weight="bold">{this.state.currencySymbol}{item.price}</Text>
@@ -294,9 +294,9 @@ class App extends React.Component {
                           <Text weight="bold" size="small">{item.originName} ({item.originSymbol}) <FormNextLink/> {item.destinationName} ({item.destinationSymbol})</Text>
                         </CardBody>
                       </Card>
+                      </Box>
+                      )}
                     </Box>
-                  )}
-                </InfiniteScroll>
               </Box>
             </Box>
           {(!this.state.showSidebar || size !== 'small') ? (
